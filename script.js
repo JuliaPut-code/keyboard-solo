@@ -30,9 +30,11 @@ function displayWord(word) {
 }
 
 function startNewWord() {
+    mistakes = 0;
+    checkGameOver();
+    updateStats();
     currentWord = getRandomWord();
     currentCharIndex = 0;
-    mistakes = 0;
     displayWord(currentWord);
 }
 
@@ -41,8 +43,6 @@ function updateStats() {
     wrongCountElement.textContent = wrongCount;
     wordMistakesElement.textContent = mistakes;
 }
-
-const throttledUpdateStats = _.throttle(updateStats, 200);
 
 function getElapsedTime() {
     const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
@@ -85,15 +85,12 @@ function checkGameOver() {
     }
 }
 
-const debouncedCheckGameOver = _.debounce(checkGameOver, 1000);
-
 function initGame() {
     gameOver = false;
     correctCount = 0;
     wrongCount = 0;
     startNewWord();
     startTime = Date.now();
-    updateStats();
     timerInterval = setInterval(updateTimer, 1000);
 }
 
@@ -107,11 +104,13 @@ document.addEventListener('keydown', (event) => {
 
     if (inputChar === currentChar) {
         wordContainer.children[currentCharIndex].classList.add('c');
+        wordContainer.children[currentCharIndex].classList.remove('w');
         currentCharIndex++;
     } else {
         wordContainer.children[currentCharIndex].classList.add('w');
         mistakes++;
     }
+    updateStats();
 
     if (currentCharIndex === currentWord.length) {
         if (mistakes === 0) {
@@ -120,13 +119,11 @@ document.addEventListener('keydown', (event) => {
             wrongCount++;
         }
 
-        throttledUpdateStats();
-
-        debouncedCheckGameOver();
+        updateStats();
 
         setTimeout(() => {
             startNewWord();
-        }, 500);
+        }, 100);
     }
 });
 
